@@ -26,16 +26,11 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Set Image Tag
+    - name: Set IMAGE_TAG with today's date and time
       id: set-image-tag
-      run: echo "::set-output name=IMAGE_TAG::$(date +'%Y-%m-%d %H:%M:%S')"
-
-    - name: Use Image Tag in Next Step
-      run: echo "Image Tag is ${{ steps.set-image-tag.outputs.IMAGE_TAG }}"
+      run: |
+        IMAGE_TAG=$(date +'%Y-%m-%d %H:%M:%S')
+        echo "::set-output name=IMAGE_TAG::$IMAGE_TAG"
 
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
