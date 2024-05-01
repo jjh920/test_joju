@@ -30,11 +30,12 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Set IMAGE_TAG with today's date
+    - name: Set Image Tag
       id: set-image-tag
-      run: |
-        IMAGE_TAG=$(date +'%Y-%m-%d %H:%M:%S')
-        echo "::set-output name=IMAGE_TAG::$IMAGE_TAG"
+      run: echo "::set-output name=IMAGE_TAG::$(date +'%Y-%m-%d %H:%M:%S')"
+
+    - name: Use Image Tag in Next Step
+      run: echo "Image Tag is ${{ steps.set-image-tag.outputs.IMAGE_TAG }}"
 
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
