@@ -30,10 +30,10 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Set IMAGE_TAG with today's date
+    - name: Set IMAGE_TAG with Korean local time
       id: set-image-tag
       run: |
-        IMAGE_TAG=$(date +'%Y%m%d%H%M%S')
+        IMAGE_TAG=$(TZ=Asia/Seoul date +'%Y%m%d%H%M%S')
         echo "::set-output name=IMAGE_TAG::$IMAGE_TAG"
 
     - name: Build, tag, and push image to Amazon ECR
