@@ -29,7 +29,7 @@ jobs:
     - name: Set IMAGE_TAG with today's date and time
       id: set-image-tag
       run: |
-        IMAGE_TAG=$(date +'%Y`-`%m`-`%d %H:%M:%S')
+        IMAGE_TAG=$(date +'%Y%m%d%H%M%S')
         echo "::set-output name=IMAGE_TAG::$IMAGE_TAG"
 
     - name: Build, tag, and push image to Amazon ECR
