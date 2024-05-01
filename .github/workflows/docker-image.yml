@@ -1,14 +1,13 @@
 name: Dockerizing to Amazon ECR
 
 on:
-  push:       # 트리거
+  push:
     branches:
       - main
       
 env:
-  AWS_REGION: ap-northeast-2        # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: test_jojuhyeon            # set this to your Amazon ECR repository name
-  
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: test_jojuhyeon
 
 jobs:
   deploy:
@@ -23,7 +22,7 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}          # 나의 ECR 정보
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
@@ -31,15 +30,15 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
+    - name: Build Docker image
+      run: |
+        docker build -t my-image:${{ github.run_number }} .
+
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        # Build a docker container and
-        # push it to ECR so that it can
-        # be deployed to ECS.
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
