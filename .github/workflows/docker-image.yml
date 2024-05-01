@@ -33,7 +33,7 @@ jobs:
     - name: Set IMAGE_TAG with Korean local time
       id: set-image-tag
       run: |
-        IMAGE_TAG=$(TZ=Asia/Seoul date +'%Y_%m_%d_%H_%M_%S')
+        IMAGE_TAG=$(TZ=Asia/Seoul date +'%Y_%m%d_%H%M%S')
         echo "::set-output name=IMAGE_TAG::$IMAGE_TAG"
 
     - name: Build, tag, and push image to Amazon ECR
