@@ -2,16 +2,23 @@ name: Dockerizing to Amazon ECR
 
 on:
   push:
+    paths:
+      - 'msa-frontend/**'
+      - 'product-service/**'
+      - 'user-service/**'
     branches:
       - main
-      
+
 env:
   AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: test_jojuhyeon
+  ECR_REGISTRY: <YOUR_ECR_REGISTRY>
+  ECR_REPOSITORY_MSA_FRONTEND: msa-frontend
+  ECR_REPOSITORY_PRODUCT_SERVICE: product-service
+  ECR_REPOSITORY_USER_SERVICE: user-service
 
 jobs:
-  deploy:
-    name: Deploy
+  build-and-push:
+    name: Build and Push Docker Images
     runs-on: ubuntu-latest
     environment: production
 
@@ -26,22 +33,35 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
     - name: Set IMAGE_TAG with Korean local time
       id: set-image-tag
       run: |
         IMAGE_TAG=$(TZ=Asia/Seoul date +'%Y_%m%d_%H%M%S')
         echo "::set-output name=IMAGE_TAG::$IMAGE_TAG"
 
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-image
+    - name: Build and push Docker image to ECR for msa-frontend
+      if: ${{ github.event_name == 'push' && github.event.repository.name == 'msa-frontend' }}
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPO: ${{ env.ECR_REPOSITORY_MSA_FRONTEND }}
         IMAGE_TAG: ${{ steps.set-image-tag.outputs.IMAGE_TAG }}
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        docker build -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG ./msa-frontend
+        docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+
+    - name: Build and push Docker image to ECR for product-service
+      if: ${{ github.event_name == 'push' && github.event.repository.name == 'product-service' }}
+      env:
+        ECR_REPO: ${{ env.ECR_REPOSITORY_PRODUCT_SERVICE }}
+        IMAGE_TAG: ${{ steps.set-image-tag.outputs.IMAGE_TAG }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG ./product-service
+        docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+
+    - name: Build and push Docker image to ECR for user-service
+      if: ${{ github.event_name == 'push' && github.event.repository.name == 'user-service' }}
+      env:
+        ECR_REPO: ${{ env.ECR_REPOSITORY_USER_SERVICE }}
+        IMAGE_TAG: ${{ steps.set-image-tag.outputs.IMAGE_TAG }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG ./user-service
+        docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
